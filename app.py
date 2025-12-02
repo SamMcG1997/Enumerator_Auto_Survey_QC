@@ -239,7 +239,7 @@ def enumerator_analysis():
     if df_enum.empty:
         flash(f"No data found for enumerator: {enum_name}")
         return redirect(url_for("analysis"))
-
+    
     # Create unique filename
     enum_filename = "enum_hist.png"
 
