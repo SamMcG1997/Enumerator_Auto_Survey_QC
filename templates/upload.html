@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Upload Spreadsheet{% endblock %}
+{% block main %}
+<form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+    <label for="file">Choose a CSV or Excel file:</label>
+    <input type="file" name="file" accept=".csv, .xlsx, .xls" required>
+    <button type="submit">Upload</button>
+</form>
+{% endblock %}

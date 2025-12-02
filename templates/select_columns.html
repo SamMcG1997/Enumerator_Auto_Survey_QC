@@ -1,0 +1,62 @@
+<form action="/select_columns" method="POST">
+
+  <label>Enumerator column:</label>
+  <select name="enumerator_col" required>
+    {% for col in columns %}
+    <option value="{{ col }}">{{ col }}</option>
+    {% endfor %}
+  </select>
+
+  <label>How many sections?</label>
+  <input type="number" id="sections" name="sections" min="0" required>
+
+  <button type="button" onclick="generateSectionSelectors()">Select Section Columns</button>
+
+  <div id="sections_bit"></div>
+
+  <h3>Main Survey Start/End Columns</h3>
+
+  <label>Start Time:</label>
+  <select name="start_col" required>
+    {% for col in columns %}
+    <option value="{{ col }}">{{ col }}</option>
+    {% endfor %}
+  </select>
+
+  <label>End Time:</label>
+  <select name="end_col" required>
+    {% for col in columns %}
+    <option value="{{ col }}">{{ col }}</option>
+    {% endfor %}
+  </select>
+
+  <br><br>
+  <button type="submit">Continue to Analysis</button>
+</form>
+
+<script>
+function generateSectionSelectors() {
+    const sections = document.getElementById("sections").value;
+    const container = document.getElementById("sections_bit");
+    container.innerHTML = "";
+
+    for (let i = 1; i <= sections; i++) {
+        container.innerHTML += `
+            <h4>Section ${i}</h4>
+            Start:
+            <select name="section_${i}_start">
+              {% for col in columns %}
+              <option value="{{ col }}">{{ col }}</option>
+              {% endfor %}
+            </select>
+            End:
+            <select name="section_${i}_end">
+              {% for col in columns %}
+              <option value="{{ col }}">{{ col }}</option>
+              {% endfor %}
+            </select>
+            <br><br>
+        `;
+    }
+}
+</script>

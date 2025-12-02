@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Survey Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+<h1>Survey Completion Time Analysis</h1>
+<h2>Overall Time</h2>
+<div class="section-block">
+  <div class="class-row">
+    <img src="{{ url_for('static', filename='overall_hist.png') }}"
+      alt="Histogram for Overall Survey Time" class="chart-img">
+    
+    <img src="{{ url_for('static', filename='overall_ecdf.png') }}"
+      alt="ECDF for Overall Survey Time" class="chart-img">
+
+  </div>
+</div>
+
+<h2>Section Time Distributions</h2>
+
+{% for i in range(hist_paths|length) %}
+<div class="section-block">
+    <h3>Section {{ i+1 }}</h3>
+
+    <div class="charts-row">
+        <img src="{{ url_for('static', filename=hist_paths[i]) }}" 
+             alt="Histogram for Section {{ i+1 }}" class="chart-img">
+
+        <img src="{{ url_for('static', filename=ecdf_paths[i]) }}" 
+             alt="ECDF for Section {{ i+1 }}" class="chart-img">
+    </div>
+</div>
+<hr>
+{% endfor %}
+<h2>Enumerator Quality Control Summary</h2>
+
+<div class="table-container">
+<table>
+    <thead>
+        <tr>
+            <th>Enumerator</th>
+            <th>Overall Avg</th>
+            <th>Overall N</th>
+            <th>Overall Fast</th>
+            <th>Overall Slow</th>
+            <th>Overall Flag?</th>
+
+            {% for i in range(hist_paths|length) %}
+                <th>Sec {{ i+1 }} Avg</th>
+                <th>Sec {{ i+1 }} N</th>
+                <th>Sec {{ i+1 }} Fast</th>
+                <th>Sec {{ i+1 }} Slow</th>
+                <th>Sec {{ i+1 }} Flag?</th>
+            {% endfor %}
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for name, row in qc_table.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ row["avg_time"]}}</td>
+            <td>{{ row['count'] }}</td>
+            <td>{{ row['too_fast'] }}</td>
+            <td>{{ row['too_slow'] }}</td>
+
+            {% for i in range(hist_paths|length) %}
+                <td>{{ row['section_' ~ (i+1) ~ '_avg_time'] }}</td>
+                <td>{{ row['section_' ~ (i+1) ~ '_count'] }}</td>
+                <td>{{ row['section_' ~ (i+1) ~ '_too_fast'] }}</td>
+                <td>{{ row['section_' ~ (i+1) ~ '_too_slow'] }}</td>
+                <td>
+                    {% if row['section_' ~ (i+1) ~ '_flagged'] %}
+                        <span class="flag-red">Yes</span>
+                    {% else %}
+                        <span class="flag-green">No</span>
+                    {% endif %}
+                </td>
+            {% endfor %}
+
+            <td>
+                <form action="{{ url_for('enumerator_analysis') }}" method="POST" style="margin:0;">
+                    <input type="hidden" name="enum_name" value="{{ name }}">
+                    <button type="submit">View</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<br>
+<a href="{{ url_for('index') }}">Upload another file</a>
+
+</body>
+</html>

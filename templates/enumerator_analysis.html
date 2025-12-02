@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ enum_name }} - Histogram</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<h1>Enumerator Analysis: {{ enum_name }}</h1>
+
+<img src="{{ url_for('static', filename=hist_filename) }}" alt="Enumerator histogram">
+
+<h2>Analysis for {{ name }}</h2>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        {% for col in enum_data[0].keys() %}
+        <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for row in enum_data %}
+      <tr>
+        {% for value in row.values() %}
+        <td>{{ value }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<br><br>
+<a href="{{ url_for('index') }}">Upload another file</a><br>
+<a href="{{ url_for('analysis') }}">Back to overall analysis</a>
+
+</body>
+</html>
