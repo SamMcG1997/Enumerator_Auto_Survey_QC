@@ -1,21 +1,11 @@
 <form action="/select_columns" method="POST">
-
+  <h3>Enumerators & Overall Time</h3>
   <label>Enumerator column:</label>
   <select name="enumerator_col" required>
     {% for col in columns %}
     <option value="{{ col }}">{{ col }}</option>
     {% endfor %}
   </select>
-
-  <label>How many sections?</label>
-  <input type="number" id="sections" name="sections" min="0" required>
-
-  <button type="button" onclick="generateSectionSelectors()">Select Section Columns</button>
-
-  <div id="sections_bit"></div>
-
-  <h3>Main Survey Start/End Columns</h3>
-
   <label>Start Time:</label>
   <select name="start_col" required>
     {% for col in columns %}
@@ -30,8 +20,16 @@
     {% endfor %}
   </select>
 
+
+  <h3>Section Selection (Optional)</h3>
+  <label>How many sections?</label>
+  <input type="number" id="sections" name="sections" min="0" required>
+  <button type="button" onclick="generateSectionSelectors()">Select Section Columns</button>
+  <div id="sections_bit"></div>
+
   <br><br>
   <button type="submit">Continue to Analysis</button>
+  
 </form>
 
 <script>
