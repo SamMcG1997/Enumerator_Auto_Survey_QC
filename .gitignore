@@ -1,26 +1,40 @@
-# Python
+# Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 
-# Virtual env
+# Virtual environments
 venv/
-ENV/
 env/
+ENV/
 
 # Jupyter
-.ipynb_checkpoints
+.ipynb_checkpoints/
 
 # VS Code
 .vscode/
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Flask / local files
+# Flask uploads, data, generated images
 uploads/
+data/
+*.csv
+*.xlsx
+*.xls
+*.json
+
+# Generated images (QC output)
 static/*.png
+static/*.jpg
+
+# Databases
 *.sqlite3
 *.db
+
+# Logs
+*.log
+
+# dotenv / secrets
+.env
