@@ -18,16 +18,18 @@ h1, h2 {
   margin-bottom: 30px;
 }
 
-.table-container {
+/* Table styling */
+.table {
   overflow-x: auto;
-  max-width: 100%;
+  border: 1px solid #ddd;
+  margin: 20px 0;
+  display: block;
 }
 
-/* Table styling */
-table {
+.table table {
   border-collapse: collapse;
-  width: 100%;
-  margin-top: 15px;
+  width: max-content;
+  min-width: 100%;
 }
 
 th, td {

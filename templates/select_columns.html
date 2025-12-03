@@ -32,6 +32,30 @@
   
 </form>
 
+<h2>Preview of Uploaded Data (first 5 rows)</h2>
+
+<div class="table">
+  <table>
+    <thead>
+      <tr>
+        {% for col in columns %}
+        <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for row in first_rows %}
+      <tr>
+        {% for col in columns %}
+        <td>{{ row[col] }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 <script>
 function generateSectionSelectors() {
     const sections = document.getElementById("sections").value;

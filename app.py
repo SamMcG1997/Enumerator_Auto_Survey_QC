@@ -51,10 +51,12 @@ def index():
 
         # Store the columns temporarily
         columns = df.columns.tolist()
-        df.to_csv("uploads/temp_data.csv", index=False)  # keep for next step
+        df.to_csv("uploads/temp_data.csv", index=False)
+        first_rows = df.head(5).to_dict(orient='records')
+
 
         # Redirect to column selection
-        return render_template("select_columns.html", columns=columns)
+        return render_template("select_columns.html", columns=columns, first_rows = first_rows)
 
     return render_template("index.html")
 
