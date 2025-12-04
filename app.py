@@ -125,6 +125,17 @@ def analysis():
     df[start_col] = pd.to_datetime(df[start_col], errors="coerce")
     df[end_col] = pd.to_datetime(df[end_col], errors="coerce")
     df["time_col"] = (df[end_col] - df[start_col]).dt.total_seconds() / 60
+    df["date"] = df[start_col].dt.date
+    unique_days = sorted(df["date"].dropna().unique().tolist())
+
+    if request.method == "POST":
+        selected_days = request.form.getlist("selected_days")
+        if selected_days:
+            selected_days = [pd.to_datetime(d).date() for d in selected_days]
+            df = df[df["date"].isin(selected_days)]
+    else:
+        selected_days = []
+
     Q1 = df["time_col"].quantile(0.25)
     Q3 = df["time_col"].quantile(0.75)
     IQR = Q3 - Q1
@@ -214,41 +225,68 @@ def analysis():
         overall_ecdf = overall_ecdf,
         hist_paths=hist_paths,
         ecdf_paths=ecdf_paths,
-        unique_enums=unique_enums
+        unique_enums=unique_enums,
+        unique_days = unique_days,
+        selected_days = selected_days
     )
     
 
 
-@app.route("/enumerator_analysis", methods=["POST"])
+@app.route("/enumerator_analysis", methods=["GET", "POST"])
 def enumerator_analysis():
-    enum_name = request.form.get("enum_name")
+    if "enum_name" in request.form:
+        enum_name = request.form.get("enum_name")
 
-    # Load dataset again
+    elif "selected_days" in request.form:
+        enum_name = request.form.get("enum_name_hidden")  
+
+    else:
+        flash("No enumerator selected.")
+        return redirect(url_for("analysis"))
+
+    if not enum_name:
+        flash("No enumerator selected.")
+        return redirect(url_for("analysis"))    
+
     df = pd.read_csv("uploads/temp_data.csv")
-
-    # Retrieve the stored column names
     enumerator_col = session.get("enumerator_col")
     start_col = session.get("start_col")
     end_col = session.get("end_col")
+    
+    df_enum = df[df[enumerator_col] == enum_name]
 
     if not all([enumerator_col, start_col, end_col]):
         flash("Error: Missing analysis settings. Please re-upload your file.")
         return redirect(url_for("index"))
-
-    # Filter data for this enumerator
-    df_enum = df[df[enumerator_col] == enum_name]
-
-    if df_enum.empty:
-        flash(f"No data found for enumerator: {enum_name}")
-        return redirect(url_for("analysis"))
     
-    # Create unique filename
-    enum_filename = "enum_hist.png"
+    if df_enum.empty:
+        flash(f"No data found for {enum_name}")
+        return render_template(
+            "enumerator_analysis.html",
+            enum_name=enum_name,
+            hist_filename=None,
+            enum_data=[],
+            unique_days=[],
+            selected_days=[]
+        )
 
     df_enum[end_col] = pd.to_datetime(df_enum[end_col], errors="coerce")
     df_enum[start_col] = pd.to_datetime(df_enum[start_col], errors="coerce")
+
     df_enum["time_col"] = round((df_enum[end_col] - df_enum[start_col]).dt.total_seconds()/60)
     df_enum = df_enum.dropna(subset=["time_col"])
+    df_enum["date"] = df_enum[start_col].dt.date
+    unique_days = sorted(df_enum["date"].dropna().unique().tolist())
+
+    if request.method == "POST":
+        selected_days = request.form.getlist("selected_days")
+        if selected_days:
+            selected_days = [pd.to_datetime(d).date() for d in selected_days]
+            df_enum = df_enum[df_enum["date"].isin(selected_days)]
+        else:
+            selected_days = []
+    else: 
+        selected_days = unique_days
 
     Q1 = df_enum["time_col"].quantile(0.25)
     Q3 = df_enum["time_col"].quantile(0.75)
@@ -256,15 +294,19 @@ def enumerator_analysis():
     df_enum["too_fast"] = (df_enum["time_col"] < Q1 - 1.5*IQR)
     df_enum["too_slow"] = (df_enum["time_col"] > Q3 + 1.5*IQR)
 
-    hist_plot(df_enum["time_col"], enum_filename, freedman_diaconis=0)
 
+    enum_filename = "enum_hist.png"
+    hist_plot(df_enum["time_col"], enum_filename, freedman_diaconis=0)
+    
     enum_data = df_enum.to_dict(orient="records")
 
     return render_template(
         "enumerator_analysis.html",
         enum_name=enum_name,
         hist_filename=enum_filename,
-        enum_data=enum_data
+        enum_data=enum_data, 
+        unique_days = unique_days,
+        selected_days = selected_days
     )
 
 

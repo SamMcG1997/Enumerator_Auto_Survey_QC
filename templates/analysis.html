@@ -6,7 +6,24 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
+
 <body>
+<h4>Choose Dates for Analysis</h4>
+<form method="POST" style="margin-bottom: 20px;">
+  <label>Select day(s):</label>
+  <select name="selected_days" multiple size="6">
+    {% for d in unique_days %}
+      <option value="{{ d }}"
+        {% if d in selected_days %} selected {% endif %}>
+        {{ d }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Filter</button>
+</form>
+
+
 <h1>Survey Completion Time Analysis</h1>
 <h2>Overall Time</h2>
 <div class="section-block">

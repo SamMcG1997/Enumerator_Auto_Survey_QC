@@ -7,10 +7,27 @@
 <body>
 
 <h1>Enumerator Analysis: {{ enum_name }}</h1>
+<body>
+  <h4>Choose Dates for Analysis</h4>
+<form method="POST" style="margin-bottom: 20px;">
+  <input type="hidden" name="enum_name_hidden" value="{{ enum_name }}">
+  <label>Select day(s):</label>
+  <select name="selected_days" multiple size="6">
+    {% for d in unique_days %}
+      <option value="{{ d }}"
+        {% if d in selected_days %} selected {% endif %}>
+        {{ d }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Filter</button>
+</form>
+</body>
 
 <img src="{{ url_for('static', filename=hist_filename) }}" alt="Enumerator histogram">
 
-<h2>Analysis for {{ name }}</h2>
+<h2>Analysis for {{ enum_name }}</h2>
 <div class="table">
   <table>
     <thead>
