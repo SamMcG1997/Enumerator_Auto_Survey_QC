@@ -1,12 +1,13 @@
 import os
+import uuid
 import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import uuid
 import numpy as np
 
+#Flask set up
 app = Flask(__name__)
 app.secret_key = "dev"
 
@@ -14,9 +15,10 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+#Routes to HTML Pages
 
-#Upload file
 @app.route("/", methods=["GET", "POST"])
+    #Uploading file page
 def index():
     if request.method == "POST":
         if "file" not in request.files:
@@ -35,16 +37,12 @@ def index():
             flash("Please upload a CSV or XLSX file.")
             return redirect(request.url)
 
-        # Save the file
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-        file.save(filepath)
-
         # Read with pandas
         try:
             if file.filename.endswith(".csv"):
-                df = pd.read_csv(filepath)
+                df = pd.read_csv(file)
             else:
-                df = pd.read_excel(filepath)
+                df = pd.read_excel(file)
         except Exception as e:
             flash(f"Error reading file: {e}")
             return redirect(request.url)
@@ -64,6 +62,9 @@ def index():
 #Select columns
 @app.route("/select_columns", methods=["POST"])
 def select_columns():
+    #Selecting the data to do analysis on. 
+    #Select enumerator column, survey start, survey end, and section timings.
+    #Shows header to allow user to select their columns easier.
     sections = request.form.get("sections")
     try:
         sections = int(sections)
@@ -75,13 +76,14 @@ def select_columns():
     start_col = request.form.get("start_col")
     end_col = request.form.get("end_col")
 
+    #Select sections of the survey
     section_cols = {}
-
     for i in range(1, sections+1):
         section_start_col = request.form.get(f"section_{i}_start")
         section_end_col = request.form.get(f"section_{i}_end")
         section_cols[i] = {"start": section_start_col, "end": section_end_col}
 
+    #Initial Validation
     if not enumerator_col or not start_col or not end_col:
         flash("Please select all columns.")
         return redirect(url_for("index"))
@@ -94,6 +96,7 @@ def select_columns():
         flash("Main start and end times must be different.")
         return redirect(url_for("index"))
     
+    #Saving to session to allow for future access
     session["sections"] = sections
     session["section_cols"] = section_cols
     session["start_col"] = start_col
@@ -104,9 +107,9 @@ def select_columns():
     return redirect(url_for("analysis"))
 
 
-#Analysis
 @app.route("/analysis", methods=["GET", "POST"])
 def analysis():
+    #Main analysis page
 
     df = pd.read_csv("uploads/temp_data.csv")
     qc_table = {}
@@ -297,7 +300,7 @@ def enumerator_analysis():
 
     enum_filename = "enum_hist.png"
     hist_plot(df_enum["time_col"], enum_filename, freedman_diaconis=0)
-    
+
     enum_data = df_enum.to_dict(orient="records")
 
     return render_template(
