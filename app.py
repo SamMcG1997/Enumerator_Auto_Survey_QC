@@ -15,11 +15,12 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-#Routes to HTML Pages
+#### HTML Pages #####
 
+#Homepage - File Upload
 @app.route("/", methods=["GET", "POST"])
-    #Uploading file page
 def index():
+    #Uploading file page
     if request.method == "POST":
         if "file" not in request.files:
             flash("No file part in request.")
@@ -27,17 +28,17 @@ def index():
 
         file = request.files["file"]
 
-        # Validate file name
+        # Initial Validation
         if file.filename == "":
             flash("No file selected.")
             return redirect(request.url)
 
-        # Check allowed file types
+        # CSV or XLSX
         if not (file.filename.endswith(".csv") or file.filename.endswith(".xlsx")):
             flash("Please upload a CSV or XLSX file.")
             return redirect(request.url)
 
-        # Read with pandas
+        # Read into df
         try:
             if file.filename.endswith(".csv"):
                 df = pd.read_csv(file)
@@ -47,14 +48,13 @@ def index():
             flash(f"Error reading file: {e}")
             return redirect(request.url)
 
-        # Store the columns temporarily
+        # Store the data and pass to select_columns.
         columns = df.columns.tolist()
         df.to_csv("uploads/temp_data.csv", index=False)
         first_rows = df.head(5).to_dict(orient='records')
 
-
-        # Redirect to column selection
-        return render_template("select_columns.html", columns=columns, first_rows = first_rows)
+        # Send to column selection
+        return render_template("select_columns.html", columns=columns, first_rows=first_rows)
 
     return render_template("index.html")
 
@@ -96,7 +96,7 @@ def select_columns():
         flash("Main start and end times must be different.")
         return redirect(url_for("index"))
     
-    #Saving to session to allow for future access
+    #Saving to session to allow for other pages to access the info
     session["sections"] = sections
     session["section_cols"] = section_cols
     session["start_col"] = start_col
@@ -107,10 +107,12 @@ def select_columns():
     return redirect(url_for("analysis"))
 
 
+#Main analysis page
 @app.route("/analysis", methods=["GET", "POST"])
 def analysis():
-    #Main analysis page
-
+    #Main page conducting QC for the user.
+    #Generates Overall & Section Histograms. 
+    #Generates a reporting table.
     df = pd.read_csv("uploads/temp_data.csv")
     qc_table = {}
     hist_paths = []
@@ -131,10 +133,12 @@ def analysis():
     df["date"] = df[start_col].dt.date
     unique_days = sorted(df["date"].dropna().unique().tolist())
 
+    #Allow user to select specific days to review
     if request.method == "POST":
         selected_days = request.form.getlist("selected_days")
         if selected_days:
             selected_days = [pd.to_datetime(d).date() for d in selected_days]
+            #Filter df to just selected days
             df = df[df["date"].isin(selected_days)]
     else:
         selected_days = []
@@ -142,7 +146,8 @@ def analysis():
     Q1 = df["time_col"].quantile(0.25)
     Q3 = df["time_col"].quantile(0.75)
     IQR = Q3 - Q1
-
+    #Overall flagging. 
+    #Extension = allow too fast & too slow to be determined by user.
     df[f"too_fast"] = df["time_col"] < (Q1 - 1.5 * IQR)
     df[f"too_slow"] = df["time_col"] > (Q3 + 1.5 * IQR)
 
@@ -164,7 +169,7 @@ def analysis():
     fast_per_enum = df.groupby(enumerator_col)["too_fast"].sum()
     slow_per_enum = df.groupby(enumerator_col)["too_slow"].sum()
 
-            # Build QC table
+    # Build QC table
     for name in enumerator_avg.index:
         if name not in qc_table:
             qc_table[name] = {}
@@ -175,7 +180,7 @@ def analysis():
         qc_table[name]["too_slow"] = int(slow_per_enum[name])
         qc_table[name]["flagged"] = fast_per_enum[name] > 0 or slow_per_enum[name] > 0
 
-        # Loop through each section
+    # Loop through each section
     for i in range(1, sections + 1):
         sec_start = section_cols[str(i)]["start"]
         sec_end = section_cols[str(i)]["end"]
@@ -220,7 +225,8 @@ def analysis():
 
         hist_paths.append(hist_filename)
         ecdf_paths.append(ecdf_filename)
-    
+
+    #Pass all of the data to the analysis template. 
     return render_template(
         "analysis.html",
         qc_table=qc_table,
@@ -234,9 +240,10 @@ def analysis():
     )
     
 
-
+#Creating Enumerator specific analysis
 @app.route("/enumerator_analysis", methods=["GET", "POST"])
 def enumerator_analysis():
+    #Get enum name & days
     if "enum_name" in request.form:
         enum_name = request.form.get("enum_name")
 
@@ -251,6 +258,7 @@ def enumerator_analysis():
         flash("No enumerator selected.")
         return redirect(url_for("analysis"))    
 
+    #Upload data. 
     df = pd.read_csv("uploads/temp_data.csv")
     enumerator_col = session.get("enumerator_col")
     start_col = session.get("start_col")
@@ -258,10 +266,12 @@ def enumerator_analysis():
     
     df_enum = df[df[enumerator_col] == enum_name]
 
+    #QC & Validation
     if not all([enumerator_col, start_col, end_col]):
         flash("Error: Missing analysis settings. Please re-upload your file.")
         return redirect(url_for("index"))
     
+    #Should never be needed because it should be coming from a table entry. 
     if df_enum.empty:
         flash(f"No data found for {enum_name}")
         return render_template(
@@ -272,7 +282,8 @@ def enumerator_analysis():
             unique_days=[],
             selected_days=[]
         )
-
+    
+    #Creating df
     df_enum[end_col] = pd.to_datetime(df_enum[end_col], errors="coerce")
     df_enum[start_col] = pd.to_datetime(df_enum[start_col], errors="coerce")
 
@@ -281,6 +292,7 @@ def enumerator_analysis():
     df_enum["date"] = df_enum[start_col].dt.date
     unique_days = sorted(df_enum["date"].dropna().unique().tolist())
 
+    #Select the df depending on days selected.
     if request.method == "POST":
         selected_days = request.form.getlist("selected_days")
         if selected_days:
@@ -291,13 +303,14 @@ def enumerator_analysis():
     else: 
         selected_days = unique_days
 
+    #Overall QC for time taken
     Q1 = df_enum["time_col"].quantile(0.25)
     Q3 = df_enum["time_col"].quantile(0.75)
     IQR = Q3 - Q1
     df_enum["too_fast"] = (df_enum["time_col"] < Q1 - 1.5*IQR)
     df_enum["too_slow"] = (df_enum["time_col"] > Q3 + 1.5*IQR)
 
-
+    #Potential extension -Introduce section QC. 
     enum_filename = "enum_hist.png"
     hist_plot(df_enum["time_col"], enum_filename, freedman_diaconis=0)
 
@@ -313,7 +326,7 @@ def enumerator_analysis():
     )
 
 
-#Helper Functons
+#Functons
 def ecdf_plot(values, filename):
     no_nans = values[~np.isnan(values)]
     x = np.sort(no_nans)

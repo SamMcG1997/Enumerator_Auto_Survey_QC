@@ -55,7 +55,11 @@
 {% endfor %}
 <h2>Enumerator Quality Control Summary</h2>
 
-<div class="table">
+<!-- Implement QC Table. 
+ Highlight flagged enumerators. 
+ Highlight number of surveys and average time-->
+ 
+<div class="my_table">
 <table>
     <thead>
         <tr>
@@ -64,15 +68,15 @@
             <th>Overall N</th>
             <th>Overall Fast</th>
             <th>Overall Slow</th>
-            <th>Overall Flag?</th>
 
             {% for i in range(hist_paths|length) %}
                 <th>Sec {{ i+1 }} Avg</th>
                 <th>Sec {{ i+1 }} N</th>
                 <th>Sec {{ i+1 }} Fast</th>
                 <th>Sec {{ i+1 }} Slow</th>
-                <th>Sec {{ i+1 }} Flag?</th>
+                <th>Sec {{ i+1 }} Flagged?</th>
             {% endfor %}
+            <th>View</th>
         </tr>
     </thead>
 
@@ -90,10 +94,8 @@
                 <td>{{ row['section_' ~ (i+1) ~ '_count'] }}</td>
                 <td>{{ row['section_' ~ (i+1) ~ '_too_fast'] }}</td>
                 <td>{{ row['section_' ~ (i+1) ~ '_too_slow'] }}</td>
-                <td>
-                    {% if row['section_' ~ (i+1) ~ '_flagged'] %}
-                        <span class="flagged-row">Yes</span>
-                    {% endif %}
+                <td class="{% if row['section_' ~ (i+1) ~ '_flagged'] %}flagged_cell{% endif %}">
+                    {% if row['section_' ~ (i+1) ~ '_flagged'] %}Yes{% endif %}
                 </td>
             {% endfor %}
 

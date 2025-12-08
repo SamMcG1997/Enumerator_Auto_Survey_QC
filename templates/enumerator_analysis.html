@@ -23,6 +23,11 @@
 
   <button type="submit">Filter</button>
 </form>
+
+<br><br>
+<a href="{{ url_for('index') }}">Upload another file</a><br>
+<a href="{{ url_for('analysis') }}">Back to overall analysis</a>
+<br><br>
 </body>
 
 <img src="{{ url_for('static', filename=hist_filename) }}" alt="Enumerator histogram">
@@ -50,9 +55,6 @@
   </table>
 </div>
 
-<br><br>
-<a href="{{ url_for('index') }}">Upload another file</a><br>
-<a href="{{ url_for('analysis') }}">Back to overall analysis</a>
 
 </body>
 </html>

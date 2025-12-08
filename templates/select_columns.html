@@ -1,3 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Column Selection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<!-- 
+Selecting Columns for Analysis. 
+Needed are Enumerators, Overall Start Time 
+and Overall End Time 
+-->
 <form action="/select_columns" method="POST">
   <h3>Enumerators & Overall Time</h3>
   <label>Enumerator column:</label>
@@ -19,8 +32,11 @@
     <option value="{{ col }}">{{ col }}</option>
     {% endfor %}
   </select>
-
-
+  <!-- 
+  Using a function called generateSectionSelectors (Thanks ChatGPT) to 
+  allow the user to select the number of columns in their dataset and dynamically format the page to allow 
+  them to choose it. 
+  -->
   <h3>Section Selection (Optional)</h3>
   <label>How many sections?</label>
   <input type="number" id="sections" name="sections" min="0" required>
@@ -33,8 +49,8 @@
 </form>
 
 <h2>Preview of Uploaded Data (first 5 rows)</h2>
-
-<div class="table">
+<!-- Give a quick overview of all of the columns in the dataset to allow for easier selection of columns names. -->
+<div class="my_table">
   <table>
     <thead>
       <tr>
@@ -56,6 +72,9 @@
   </table>
 </div>
 
+<!-- 
+Script to select the number of sections in a survey. 
+-->
 <script>
 function generateSectionSelectors() {
     const sections = document.getElementById("sections").value;

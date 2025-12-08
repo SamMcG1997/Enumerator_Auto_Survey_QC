@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Upload Survey Data</title>
+    <meta charset="UTF-8">
+    <title>Upload Survey Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
+
 <body>
   <h1>Upload Survey Spreadsheet</h1>
 
   {% with messages = get_flashed_messages() %}
     {% if messages %}
-      <ul style="color:red;">
+      <ul class="flash-errors">
         {% for msg in messages %}
           <li>{{ msg }}</li>
         {% endfor %}
@@ -18,7 +21,7 @@
   {% endwith %}
 
   <form action="/" method="POST" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".csv,.xlsx" required>
+    <input type="file" name="file" accept=".csv,.xlsx, .xls" required>
     <button type="submit">Upload</button>
   </form>
 </body>
