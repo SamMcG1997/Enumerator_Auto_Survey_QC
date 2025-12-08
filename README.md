@@ -1,6 +1,3 @@
-# CS50_Survey_QC
-
-
 # Survey Automated Quality Control
 #### Video Demo:  <URL HERE>
 #### Description:
