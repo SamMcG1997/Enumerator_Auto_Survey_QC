@@ -1,5 +1,5 @@
 # Survey Automated Quality Control
-#### Video Demo:  <URL HERE>
+#### Video Demo: https://youtu.be/_-fPutKae4Q
 #### Description:
 This project is a web application designed to assist survey supervisors in conducting basic quality control (QC) on survey data in contexts with low capacity or where this type of QC is new. It can be difficult to conduct QC on enumerators as they complete surveys. The goal of this project is to allow an analyst to upload survey data and immediately identify patterns in enumerator performance, helping improve the overall quality of data collection.
 The application is built using Python and Flask. Users can upload CSV or Excel files containing survey data, select the relevant columns for analysis, and generate QC metrics including visualizations and summary tables. The system is flexible enough to handle surveys with multiple sections and allows filtering by day to track enumerator performance over time.
