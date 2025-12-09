@@ -33,7 +33,7 @@
 <img src="{{ url_for('static', filename=hist_filename) }}" alt="Enumerator histogram">
 
 <h2>Analysis for {{ enum_name }}</h2>
-<div class="table">
+<div class="my_table">
   <table>
     <thead>
       <tr>
@@ -45,13 +45,18 @@
 
     <tbody>
       {% for row in enum_data %}
-      <tr>
+      
+      {% set is_flagged = row['too_fast'] or row['too_slow'] %}
+      
+      <tr class="{% if is_flagged %}flagged_cell{% endif %}">
         {% for value in row.values() %}
-        <td>{{ value }}</td>
+          <td>{{ value }}</td>
         {% endfor %}
       </tr>
+      
       {% endfor %}
     </tbody>
+
   </table>
 </div>
 
